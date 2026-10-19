@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 
 fn main() {
-    let (mut rl, thread) = raylib::init().size(640, 480).title("Hello, World").build();
+    let (mut rl, thread) = raylib::init().size(640, 480).title("Cat&Mouse").build();
     let camera = Camera3D::perspective(
         Vector3::new(10.0, 10.0, 10.0), // Position
         Vector3::new(0.0, 0.0, 0.0),    // Target
@@ -11,6 +11,18 @@ fn main() {
     let mut cube_position = Vector3::new(0.0, 1.0, 0.0);
     rl.set_target_fps(60);
     while !rl.window_should_close() {
+        if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
+            cube_position.z -= 0.1;
+        }
+        if rl.is_key_down(KeyboardKey::KEY_LEFT) {
+            cube_position.z += 0.1;
+        }
+        if rl.is_key_down(KeyboardKey::KEY_UP) {
+            cube_position.x -= 0.1;
+        }
+        if rl.is_key_down(KeyboardKey::KEY_DOWN) {
+            cube_position.x += 0.1;
+        }
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::WHITE);
