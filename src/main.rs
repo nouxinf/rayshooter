@@ -3,7 +3,7 @@ use raylib::prelude::*;
 fn main() {
     let (mut rl, thread) = raylib::init().size(1280, 960).title("Cat&Mouse").build();
 
-    let mut cube_position = Vector3::new(0.0, 0.0, 0.0);
+    let mut cat_position = Vector3::new(0.0, 0.0, 0.0);
 
     let mut yaw: f32 = 45.0_f32.to_radians();
     let mut pitch: f32 = 25.0_f32.to_radians();
@@ -13,16 +13,34 @@ fn main() {
     let speed = 5.0;
     let mut camera = Camera3D::perspective(
         Vector3::new(5.0, 5.0, 5.0),
-        cube_position,
+        cat_position,
         Vector3::new(0.0, 1.0, 0.0),
         45.0,
     );
+	// CAT MODEL
+    let mut model = rl
+        .load_model(&thread, "assets/cat.glb")
+        .expect("Failed to load cat");
 
-    let model = rl
-        .load_model(&thread, "assets/cat.gltf")
-        .expect("Failed to load cat model");
+    let palette = rl
+        .load_texture(&thread, "assets/colormap-animal.png")
+        .expect("Failed to load colormap-animal");
 
-	let bazooka_model: Model = rl.load_model(&thread, "assets/bazooka.gltf").expect("Failed to load bazooka");
+    for material in model.materials_mut() {
+        material.set_material_texture(MaterialMapIndex::MATERIAL_MAP_ALBEDO, &palette);
+    }
+
+	// BLASTER MODEL
+    let mut blaster_model: Model = rl
+        .load_model(&thread, "assets/blaster-p.glb")
+        .expect("Failed to load blaster");
+	let blaster_palette = rl
+        .load_texture(&thread, "assets/colormap-blaster.png")
+        .expect("Failed to load colormap-blaster");
+
+    for material in blaster_model.materials_mut() {
+        material.set_material_texture(MaterialMapIndex::MATERIAL_MAP_ALBEDO, &blaster_palette);
+    }
 
     let mut angle = 0.0_f32;
 
@@ -44,46 +62,46 @@ fn main() {
         let right = Vector3::new(-forward.z, 0.0, forward.x);
 
         if rl.is_key_down(KeyboardKey::KEY_W) {
-            cube_position.x += forward.x * speed * delta;
-            cube_position.z += forward.z * speed * delta;
+            cat_position.x += forward.x * speed * delta;
+            cat_position.z += forward.z * speed * delta;
         }
 
         if rl.is_key_down(KeyboardKey::KEY_S) {
-            cube_position.x -= forward.x * speed * delta;
-            cube_position.z -= forward.z * speed * delta;
+            cat_position.x -= forward.x * speed * delta;
+            cat_position.z -= forward.z * speed * delta;
         }
 
         if rl.is_key_down(KeyboardKey::KEY_A) {
-            cube_position.x -= right.x * speed * delta;
-            cube_position.z -= right.z * speed * delta;
+            cat_position.x -= right.x * speed * delta;
+            cat_position.z -= right.z * speed * delta;
         }
 
         if rl.is_key_down(KeyboardKey::KEY_D) {
-            cube_position.x += right.x * speed * delta;
-            cube_position.z += right.z * speed * delta;
+            cat_position.x += right.x * speed * delta;
+            cat_position.z += right.z * speed * delta;
         }
 
         camera.position = Vector3::new(
-            cube_position.x + camera_distance * pitch.cos() * yaw.cos(),
-            cube_position.y + camera_distance * pitch.sin(),
-            cube_position.z + camera_distance * pitch.cos() * yaw.sin(),
+            cat_position.x + camera_distance * pitch.cos() * yaw.cos(),
+            cat_position.y + camera_distance * pitch.sin(),
+            cat_position.z + camera_distance * pitch.cos() * yaw.sin(),
         );
 
         camera.target = Vector3::new(
-            cube_position.x - yaw.cos(),
-            cube_position.y + 5.0,
-            cube_position.z - yaw.sin(),
+            cat_position.x - yaw.cos(),
+            cat_position.y + 5.0,
+            cat_position.z - yaw.sin(),
         );
         camera.up = Vector3::new(0.0, 1.0, 0.0);
 
-		let forward = Vector3::new(-yaw.cos(), 0.0, -yaw.sin());
-		let right = Vector3::new(-forward.z, 0.0, forward.x);
+        let forward = Vector3::new(-yaw.cos(), 0.0, -yaw.sin());
+        let right = Vector3::new(-forward.z, 0.0, forward.x);
 
-		let bazooka_position = Vector3::new(
-   			cube_position.x + right.x * 1.0 + forward.x * 0.5,
-    		cube_position.y + 2.0,
-    		cube_position.z + right.z * 1.0 + forward.z * 0.5,
-		);
+        let blaster_position = Vector3::new(
+            cat_position.x + right.x * 1.0 + forward.x * 0.5,
+            cat_position.y + 3.0,
+            cat_position.z + right.z * 1.0 + forward.z * 0.5,
+        );
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::WHITE);
@@ -92,31 +110,22 @@ fn main() {
             let mut d3d = d.begin_mode3D(camera);
 
             d3d.draw_grid(20, 1.0);
-
-            /*d3d.draw_model_ex(
-                &model,
-                cube_position,
-                Vector3::new(0.0, 1.0, 0.0),
-                angle,
-                Vector3::new(1.0, 1.0, 1.0),
-                Color::RED,
-            );*/
             d3d.draw_model_ex(
                 &model,
-                cube_position,
+                cat_position,
                 Vector3::new(0.0, 1.0, 0.0),
-                angle,
-                Vector3::new(4.0, 4.0, 4.0),
+                angle - 90.0,
+                Vector3::new(2.0, 2.0, 2.0),
                 Color::WHITE,
             );
-			d3d.draw_model_ex(
-				&bazooka_model,
-				bazooka_position,
-				Vector3::new(0.0, 1.0, 0.0),
-				angle + 180.0,
-				Vector3::new(5.0, 5.0, 5.0),
-				Color::WHITE,
-			);
+            d3d.draw_model_ex(
+                &blaster_model,
+                blaster_position,
+                Vector3::new(0.0, 1.0, 0.0),
+                angle + 90.0,
+                Vector3::new(5.0, 5.0, 5.0),
+                Color::WHITE,
+            );
         }
 
         d.draw_text("Cat&Mouse Prototype", 12, 12, 20, Color::BLACK);
