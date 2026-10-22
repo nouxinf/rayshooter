@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 
 fn main() {
-    let (mut rl, thread) = raylib::init().size(640, 480).title("Cat&Mouse").build();
+    let (mut rl, thread) = raylib::init().size(1280, 960).title("Cat&Mouse").build();
 
     let mut cube_position = Vector3::new(0.0, 0.0, 0.0);
 
@@ -20,7 +20,9 @@ fn main() {
 
     let model = rl
         .load_model(&thread, "assets/cat.gltf")
-        .expect("Failed to laod model");
+        .expect("Failed to load cat model");
+
+	let bazooka_model: Model = rl.load_model(&thread, "assets/bazooka.gltf").expect("Failed to load bazooka");
 
     let mut angle = 0.0_f32;
 
@@ -74,6 +76,14 @@ fn main() {
         );
         camera.up = Vector3::new(0.0, 1.0, 0.0);
 
+		let forward = Vector3::new(-yaw.cos(), 0.0, -yaw.sin());
+		let right = Vector3::new(-forward.z, 0.0, forward.x);
+
+		let bazooka_position = Vector3::new(
+   			cube_position.x + right.x * 1.0 + forward.x * 0.5,
+    		cube_position.y + 2.0,
+    		cube_position.z + right.z * 1.0 + forward.z * 0.5,
+		);
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::WHITE);
@@ -99,6 +109,14 @@ fn main() {
                 Vector3::new(4.0, 4.0, 4.0),
                 Color::WHITE,
             );
+			d3d.draw_model_ex(
+				&bazooka_model,
+				bazooka_position,
+				Vector3::new(0.0, 1.0, 0.0),
+				angle + 180.0,
+				Vector3::new(5.0, 5.0, 5.0),
+				Color::WHITE,
+			);
         }
 
         d.draw_text("Cat&Mouse Prototype", 12, 12, 20, Color::BLACK);
